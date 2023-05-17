@@ -23,6 +23,7 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesReposit
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.MisskeyClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkRunningByTag
@@ -124,7 +125,7 @@ class SatenaApplication : Application() {
 
     /** アカウント管理 */
     val accountLoader : AccountLoader by lazy {
-        AccountLoader(this, HatenaClient, MastodonClientHolder)
+        AccountLoader(this, HatenaClient, MastodonClientHolder, MisskeyClientHolder)
     }
 
     // ------ //

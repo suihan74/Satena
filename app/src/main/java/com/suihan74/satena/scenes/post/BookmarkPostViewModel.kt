@@ -18,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TootVisibility
+import com.suihan74.satena.models.misskey.NoteVisibility
 import com.suihan74.satena.scenes.post.dialog.AddingTagDialog
 import com.suihan74.satena.scenes.post.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
@@ -46,6 +47,8 @@ class BookmarkPostViewModel(
 
     val postTwitter = repository.postTwitter
 
+    val postMisskey = repository.postMisskey
+
     val postMastodon = repository.postMastodon
 
     val postFacebook = repository.postFacebook
@@ -67,6 +70,9 @@ class BookmarkPostViewModel(
 
     /** Mastodonアカウントが紐づいているか否か */
     val signedInMastodon = repository.signedInMastodon
+
+    /** Misskeyアカウントが紐づいているか否か */
+    val signedInMisskey = repository.signedInMisskey
 
     /** Facebookアカウントが紐づいているか否か */
     val signedInFacebook = repository.signedInFacebook
@@ -114,8 +120,9 @@ class BookmarkPostViewModel(
             private = private.value ?: false,
             postTwitter = postTwitter.value ?: false,
             postMastodon = postMastodon.value ?: false,
+            postMisskey = postMisskey.value ?: false,
             postFacebook = postFacebook.value ?: false,
-            share = share.value ?: false,
+            share = share.value ?: false
         )
 
     /** 編集データを再現する */
@@ -128,6 +135,7 @@ class BookmarkPostViewModel(
         private.value = editData.private
         postTwitter.value = editData.postTwitter
         postMastodon.value = editData.postMastodon
+        postMisskey.value = editData.postMisskey
         postFacebook.value = editData.postFacebook
         share.value = editData.share
     }
@@ -171,6 +179,10 @@ class BookmarkPostViewModel(
 
             is AccountLoader.MastodonSignInException -> {
                 context.showToast(R.string.msg_auth_mastodon_failed)
+            }
+
+            is AccountLoader.MisskeySignInException -> {
+                context.showToast(R.string.msg_auth_misskey_failed)
             }
 
             is ConnectionFailureException -> {
@@ -244,9 +256,12 @@ class BookmarkPostViewModel(
 
         runCatching {
             repository.postBookmark(context, editData)
-        }.onSuccess { (bookmarkResult, err) ->
-            if (err == null) context.showToast(R.string.msg_post_bookmark_succeeded)
-            else context.showToast(R.string.msg_post_mastodon_failed)
+        }.onSuccess { (bookmarkResult, mstdnException, misskeyException) ->
+            when {
+                mstdnException != null -> context.showToast(R.string.msg_post_mastodon_failed)
+                misskeyException != null -> context.showToast(R.string.msg_post_misskey_failed)
+                else -> context.showToast(R.string.msg_post_bookmark_succeeded)
+            }
             onPostSuccess?.invoke(bookmarkResult)
         }.onFailure { e ->
             when (e) {
@@ -419,6 +434,33 @@ class BookmarkPostViewModel(
 
         AlertDialogFragment.Builder()
             .setTitle(R.string.pref_accounts_mastodon_status_visibility_desc)
+            .setSingleChoiceItems(labels, initialSelected) { f, which ->
+                SafeSharedPreferences.create<PreferenceKey>(f.context)
+                    .edit {
+                        putInt(key, which)
+                    }
+            }
+            .setNegativeButton(R.string.dialog_cancel)
+            .dismissOnClickItem(true)
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /**
+     * Misskey投稿の公開範囲を選択するダイアログを開く
+     */
+    fun openNoteVisibilitySettingDialog(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.MISSKEY_POST_VISIBILITY
+        val items = NoteVisibility.values()
+        val labels = items.map { it.textId }
+        val initialSelected = prefs.getInt(key)
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_accounts_misskey_status_visibility_desc)
             .setSingleChoiceItems(labels, initialSelected) { f, which ->
                 SafeSharedPreferences.create<PreferenceKey>(f.context)
                     .edit {

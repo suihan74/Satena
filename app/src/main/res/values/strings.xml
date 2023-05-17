@@ -64,11 +64,16 @@
 
     <!-- ログイン画面 -->
     <string name="sign_in">ログイン</string>
+    <string name="authorize">連携</string>
     <string name="hint_mastodon_instance">インスタンス名 (e.g. mstdn.jp)</string>
+    <string name="hint_misskey_instance">インスタンス名 (e.g. misskey.io)</string>
     <string name="msg_hatena_sign_in_info_is_blank">ユーザー名とパスワードを入力してください</string>
     <string name="msg_hatena_sign_in_succeeded">id:%s でログインしました</string>
     <string name="msg_hatena_sign_in_failed">ログイン失敗</string>
     <string name="msg_hatena_sign_in_warning_on_creating">注意:現在，Satenaから「Googleでログイン」はご利用いただけません</string>
+
+    <string name="pref_account_misskey_msg_auth_succeeded">連携成功</string>
+    <string name="pref_account_misskey_msg_auth_failure">連携失敗</string>
 
     <!-- ブコメリストタブ -->
     <string name="bookmarks_tab_popular">注目</string>
@@ -271,16 +276,26 @@
     <!-- accounts -->
     <string name="pref_accounts_service_name_hatena">Hatena</string>
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>
+    <string name="pref_accounts_service_name_misskey">Misskey</string>
     <string name="pref_accounts_save_hatena_id_password_desc">ID/Passwordを保存して認証情報失効時に自動的に再ログインする</string>
+
     <string name="pref_accounts_mastodon_status_visibility_desc">トゥートの公開範囲</string>
     <string name="mastodon_status_visibility_public">Public(公開TLに投稿する)</string>
     <string name="mastodon_status_visibility_unlisted">Unlisted(公開TLで表示しない)</string>
     <string name="mastodon_status_visibility_private">Private(フォロワーだけに表示)</string>
     <string name="mastodon_status_visibility_direct">Direct(言及した相手にだけ表示)</string>
 
+    <string name="pref_accounts_misskey_status_visibility_desc">ノートの公開範囲</string>
+    <string name="misskey_status_visibility_public">Public(全てのユーザーに公開)</string>
+    <string name="misskey_status_visibility_home">Home(ホームTLのみに公開)</string>
+    <string name="misskey_status_visibility_followers">Follower(自分のフォロワーのみに公開)</string>
+    <string name="misskey_status_visibility_specified">Direct(指定したユーザーのみに公開)</string>
+
     <string name="pref_accounts_sign_in">ログイン</string>
     <string name="pref_accounts_delete_hatena_message">Satenaでのはてなアカウント利用を停止します。\nアカウント情報が必要なサービスのご利用には再度ログインが必要になります。</string>
     <string name="pref_accounts_delete_mastodon_message">SatenaでのMastodonアカウント利用を停止します。\nブクマ時のMastodonへの同時投稿機能のご利用には再度ログインが必要になります。</string>
+    <string name="pref_accounts_delete_misskey_message">SatenaでのMisskeyアカウント利用を停止します。\nブクマ時のMisskeyへの同時投稿機能のご利用には再度ログインが必要になります。</string>
+
     <!-- generals -->
     <string name="pref_generals_section_theme">テーマ</string>
     <string name="pref_generals_section_notices">通知</string>
@@ -628,6 +643,8 @@
     <string name="msg_post_bookmark_succeeded">ブックマークしました</string>
     <string name="msg_post_bookmark_failed">ブックマークに失敗しました</string>
     <string name="msg_post_mastodon_failed">ブックマークしましたが、Mastodonへの投稿に失敗しました</string>
+    <string name="msg_post_misskey_failed">ブックマークしましたが、Misskeyへの投稿に失敗しました</string>
+    <string name="hint_misskey_toggle">Misskeyに投稿します</string>
     <string name="hint_mastodon_toggle">Mastodonに投稿します</string>
     <string name="hint_twitter_toggle">Twitterに投稿します</string>
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
@@ -685,6 +702,7 @@
     <!-- 認証 -->
     <string name="msg_auth_failed">アカウント認証失敗</string>
     <string name="msg_auth_mastodon_failed">Mastodon認証失敗</string>
+    <string name="msg_auth_misskey_failed">Misskey認証失敗</string>
 
     <!-- エントリ画面 -->
     <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>

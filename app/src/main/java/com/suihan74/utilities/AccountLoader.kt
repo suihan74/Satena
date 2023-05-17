@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.suihan74.hatenaLib.Account
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.misskey.Misskey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.sys1yagi.mastodon4j.MastodonClient
@@ -18,19 +19,23 @@ import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
 
 typealias MastodonAccount = com.sys1yagi.mastodon4j.api.entity.Account
+typealias MisskeyAccount = com.suihan74.misskey.entity.Account
 
 class AccountLoader(
     private val context: Context,
     val client: HatenaClient,
-    val mastodonClientHolder: MastodonClientHolder
+    val mastodonClientHolder: MastodonClientHolder,
+    val misskeyClientHolder: MisskeyClientHolder
 ) {
     class HatenaSignInException(message: String? = null) : Throwable(message)
     class MastodonSignInException(message: String? = null) : Throwable(message)
+    class MisskeySignInException(message: String? = null) : Throwable(message)
 
     // ------ //
 
     private val hatenaMutex by lazy { Mutex() }
     private val mastodonMutex by lazy { Mutex() }
+    private val misskeyMutex by lazy { Mutex() }
 
     // ------ //
 
@@ -40,13 +45,16 @@ class AccountLoader(
     private val sharedMastodonFlow = MutableStateFlow<MastodonAccount?>(null)
     val mastodonFlow : StateFlow<MastodonAccount?> = sharedMastodonFlow
 
+    private val sharedMisskeyFlow = MutableStateFlow<MisskeyAccount?>(null)
+    val misskeyFlow : StateFlow<MisskeyAccount?> = sharedMisskeyFlow
 
     // ------ //
 
     suspend fun signInAccounts(reSignIn: Boolean = false) = coroutineScope {
         val jobs = listOf(
             async { signInHatena(reSignIn) },
-            async { signInMastodon(reSignIn) }
+            async { signInMastodon(reSignIn) },
+            async { signInMisskey(reSignIn) }
         )
         jobs.awaitAll()
     }
@@ -130,6 +138,47 @@ class AccountLoader(
         }
     }
 
+    suspend fun signInMisskey(reSignIn: Boolean = true) : MisskeyAccount? {
+        misskeyMutex.withLock {
+            if (misskeyClientHolder.signedIn() && !reSignIn) {
+                sharedMisskeyFlow.emit(misskeyClientHolder.account)
+                return misskeyClientHolder.account
+            }
+
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val misskeyAccessTokenEncryptedStr =
+                prefs.get<String>(PreferenceKey.MISSKEY_ACCESS_TOKEN)
+
+            if (misskeyAccessTokenEncryptedStr.isEmpty()) {
+                sharedMisskeyFlow.emit(null)
+                return null
+            }
+            // Misskeyログイン
+            val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+            val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
+            try {
+                val key = createKey(context)
+                val misskeyAccessTokenEncryptedData = serializer.deserialize(misskeyAccessTokenEncryptedStr)
+                val decrypted = CryptUtility.decrypt(misskeyAccessTokenEncryptedData, key)
+                val data = dataSerializer.deserialize(decrypted)
+
+                val client = Misskey.Client(
+                    instance = data.instanceName,
+                    tokenDigest = data.accessToken
+                )
+                val account = misskeyClientHolder.signIn(client)
+                sharedMisskeyFlow.emit(account)
+
+                return account
+            }
+            catch (e: Throwable) {
+                sharedMisskeyFlow.emit(null)
+                Log.d("MisskeyLogin", Log.getStackTraceString(e))
+                throw MisskeySignInException(e.message)
+            }
+        }
+    }
+
     // ------ //
 
     suspend fun signInHatena(rk: String) : Account {
@@ -167,6 +216,26 @@ class AccountLoader(
         }
     }
 
+    suspend fun signInMisskey(instanceName: String, accessToken: String) : MisskeyAccount {
+        misskeyMutex.withLock {
+            try {
+                val account = MisskeyClientHolder.signIn(
+                    Misskey.Client(
+                        instance = instanceName,
+                        tokenDigest = accessToken
+                    )
+                )
+                sharedMisskeyFlow.emit(account)
+                saveMisskeyAccount(instanceName, accessToken)
+
+                return account
+            }
+            catch (e: Throwable) {
+                throw TaskFailureException(cause = e)
+            }
+        }
+    }
+
     // ------ //
 
     private fun saveHatenaCookie(rk: String) {
@@ -194,6 +263,21 @@ class AccountLoader(
         }
     }
 
+    private fun saveMisskeyAccount(instanceName: String, accessToken: String) {
+        val key = createKey(context)
+        val data = SerializableMastodonAccessToken(instanceName, accessToken)
+
+        val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
+        val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+
+        val encryptedData = CryptUtility.encrypt(dataSerializer.serialize(data), key)
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        prefs.edit {
+            putString(PreferenceKey.MISSKEY_ACCESS_TOKEN, serializer.serialize(encryptedData))
+        }
+    }
+
     // ------ //
 
     suspend fun deleteHatenaAccount() {
@@ -215,6 +299,17 @@ class AccountLoader(
                 remove(PreferenceKey.MASTODON_ACCESS_TOKEN)
             }
             mastodonClientHolder.signOut()
+        }
+    }
+
+    suspend fun deleteMisskeyAccount() {
+        misskeyMutex.withLock {
+            sharedMisskeyFlow.emit(null)
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            prefs.edit {
+                remove(PreferenceKey.MISSKEY_ACCESS_TOKEN)
+            }
+            misskeyClientHolder.signOut()
         }
     }
 
