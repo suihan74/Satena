@@ -24,3 +24,6 @@ class MultiplePostException : Throwable("multiple post")
 
 /** Mastodonへの投稿に失敗 */
 class PostingMastodonFailureException(cause: Throwable? = null) : Throwable(cause = cause)
+
+/** Misskeyへの投稿に失敗 */
+class PostingMisskeyFailureException(cause: Throwable? = null) : Throwable(cause = cause)

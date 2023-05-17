@@ -3,7 +3,9 @@ package com.suihan74.satena.scenes.post
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -115,6 +117,11 @@ class BookmarkPostFragment : Fragment(), AddingTagDialog.OnDismissListener {
 
         binding.postMastodonToggle.setOnLongClickListener {
             viewModel.openTootVisibilitySettingDialog(requireContext(), childFragmentManager)
+            return@setOnLongClickListener true
+        }
+
+        binding.postMisskeyToggle.setOnLongClickListener {
+            viewModel.openNoteVisibilitySettingDialog(requireContext(), childFragmentManager)
             return@setOnLongClickListener true
         }
 

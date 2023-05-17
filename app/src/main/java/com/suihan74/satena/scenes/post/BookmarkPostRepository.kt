@@ -10,17 +10,17 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.models.TootVisibility
+import com.suihan74.satena.models.misskey.NoteVisibility
 import com.suihan74.satena.modifySpecificUrls
-import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
-import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
-import com.suihan74.satena.scenes.post.exceptions.TagAlreadyExistsException
-import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
+import com.suihan74.satena.scenes.post.exceptions.*
 import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -90,6 +90,9 @@ class BookmarkPostRepository(
     /** Mastodonアカウントが紐づいているか否か */
     val signedInMastodon = MutableLiveData<Boolean>()
 
+    /** Misskeyアカウントが紐づいているか否か */
+    val signedInMisskey = MutableLiveData<Boolean>()
+
     /** Facebookアカウントが紐づいているか否か */
     val signedInFacebook = MutableLiveData<Boolean>()
 
@@ -98,6 +101,8 @@ class BookmarkPostRepository(
     val postTwitter = MutableLiveData(false)
 
     val postMastodon = MutableLiveData(false)
+
+    val postMisskey = MutableLiveData(false)
 
     val postFacebook = MutableLiveData(false)
 
@@ -151,6 +156,7 @@ class BookmarkPostRepository(
      *
      * @throws AccountLoader.HatenaSignInException
      * @throws AccountLoader.MastodonSignInException
+     * @throws AccountLoader.MisskeySignInException
      * @throws ConnectionFailureException
      */
     suspend fun initialize(url: String) = withContext(Dispatchers.Main) {
@@ -174,10 +180,11 @@ class BookmarkPostRepository(
     }
 
     /**
-     * はてなにサインインし、成功したらMastodonにもサインインを行う
+     * はてなにサインインし、成功したらMastodon/Misskeyにもサインインを行う
      *
      * @throws AccountLoader.HatenaSignInException
      * @throws AccountLoader.MastodonSignInException
+     * @throws AccountLoader.MisskeySignInException
      */
     private suspend fun signIn() = withContext(Dispatchers.Main) {
         val result = runCatching {
@@ -208,12 +215,17 @@ class BookmarkPostRepository(
                     isFacebookActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED)
             }
 
-            signInMastodon()
+            listOf(
+                async { signInMastodon() },
+                async { signInMisskey() }
+            ).awaitAll()
         }
         else {
             when (val e = result.exceptionOrNull()) {
                 is AccountLoader.HatenaSignInException,
-                is AccountLoader.MastodonSignInException -> throw e
+                is AccountLoader.MastodonSignInException,
+                is AccountLoader.MisskeySignInException -> throw e
+                else -> {}
             }
         }
     }
@@ -245,6 +257,36 @@ class BookmarkPostRepository(
         else {
             throw result.exceptionOrNull() as? AccountLoader.MastodonSignInException
                 ?: AccountLoader.MastodonSignInException()
+        }
+    }
+
+    /**
+     * Misskeyにサインインする
+     *
+     * @throws AccountLoader.MisskeySignInException
+     */
+    private suspend fun signInMisskey() = withContext(Dispatchers.Main) {
+        val result = runCatching {
+            accountLoader.signInMisskey(reSignIn = false)
+        }
+
+        if (result.isSuccess) {
+            val account = accountLoader.misskeyClientHolder.account
+            val isActive = account != null
+            signedInMisskey.value = isActive
+
+            if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+                postMisskey.value =
+                    isActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MISSKEY_LAST_CHECKED)
+            }
+            else {
+                postMastodon.value =
+                    isActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MISSKEY_DEFAULT_CHECKED)
+            }
+        }
+        else {
+            throw result.exceptionOrNull() as? AccountLoader.MisskeySignInException
+                ?: AccountLoader.MisskeySignInException()
         }
     }
 
@@ -380,7 +422,7 @@ class BookmarkPostRepository(
      */
     suspend fun postBookmark(
         editData: BookmarkEditData
-    ) : Pair<BookmarkResult, PostingMastodonFailureException?> = withContext(Dispatchers.Default) {
+    ) : Triple<BookmarkResult, PostingMastodonFailureException?, PostingMisskeyFailureException?> = withContext(Dispatchers.Default) {
         val entry = editData.entry
 
         // URLスキームがhttpかhttpsであることを確認する
@@ -420,30 +462,77 @@ class BookmarkPostRepository(
         )
 
         var mstdnException : PostingMastodonFailureException? = null
-        if (editData.postMastodon) {
-            runCatching {
-                val visibility = TootVisibility.fromOrdinal(prefs.getInt(PreferenceKey.MASTODON_POST_VISIBILITY))
-
-                val status =
-                    if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
-                    else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
-
-                accountLoader.signInMastodon(reSignIn = false)
-                val client = accountLoader.mastodonClientHolder.client!!
-                Statuses(client).postStatus(
-                    status = status,
-                    inReplyToId = null,
-                    sensitive = false,
-                    visibility = visibility.value,
-                    mediaIds = null,
-                    spoilerText = null
-                ).execute()
-            }.onFailure {
-                mstdnException = PostingMastodonFailureException(cause = it)
+        var misskeyException : PostingMisskeyFailureException? = null
+        listOf(
+            async {
+                runCatching {
+                    postToMastodon(entry, bookmarkResult, editData)
+                }.onFailure {
+                    mstdnException = it as PostingMastodonFailureException
+                }
+            },
+            async {
+                runCatching {
+                    postToMisskey(entry, bookmarkResult, editData)
+                }.onFailure {
+                    misskeyException = it as PostingMisskeyFailureException
+                }
             }
-        }
+        ).awaitAll()
 
-        return@withContext bookmarkResult to mstdnException
+        return@withContext Triple(bookmarkResult, mstdnException, misskeyException)
+    }
+
+    /**
+     * Mastodonに投稿する
+     *
+     * @throws PostingMastodonFailureException
+     */
+    private suspend fun postToMastodon(entry: Entry, bookmarkResult: BookmarkResult, editData: BookmarkEditData) {
+        if (!editData.postMastodon) return
+        runCatching {
+            val visibility = TootVisibility.fromOrdinal(prefs.getInt(PreferenceKey.MASTODON_POST_VISIBILITY))
+            val status =
+                if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
+                else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
+
+            accountLoader.signInMastodon(reSignIn = false)
+            val client = accountLoader.mastodonClientHolder.client!!
+            Statuses(client).postStatus(
+                status = status,
+                inReplyToId = null,
+                sensitive = false,
+                visibility = visibility.value,
+                mediaIds = null,
+                spoilerText = null
+            ).execute()
+        }.onFailure {
+            throw PostingMastodonFailureException(cause = it)
+        }
+    }
+
+    /**
+     * Misskeyに投稿する
+     *
+     * @throws PostingMastodonFailureException
+     */
+    private suspend fun postToMisskey(entry: Entry, bookmarkResult: BookmarkResult, editData: BookmarkEditData) {
+        if (!editData.postMisskey) return
+        runCatching {
+            val visibility = NoteVisibility.values()[prefs.getInt(PreferenceKey.MISSKEY_POST_VISIBILITY)]
+            val status =
+                if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
+                else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
+
+            accountLoader.signInMisskey(reSignIn = false)
+            val client = accountLoader.misskeyClientHolder.client!!
+            client.notes.create(
+                visibility = visibility.value,
+                text = status
+            )
+        }.onFailure {
+            throw PostingMisskeyFailureException(cause = it)
+        }
     }
 
     /** タグ部分の終了位置を取得する */
@@ -463,6 +552,7 @@ class BookmarkPostRepository(
             putBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_LAST_CHECKED, postTwitter.value ?: false)
             putBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_LAST_CHECKED, postFacebook.value ?: false)
             putBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_LAST_CHECKED, postMastodon.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_MISSKEY_LAST_CHECKED, postMisskey.value ?: false)
         }
     }
 }
