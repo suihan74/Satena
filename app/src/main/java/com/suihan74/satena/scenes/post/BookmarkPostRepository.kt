@@ -285,7 +285,7 @@ class BookmarkPostRepository(
                     isActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MISSKEY_LAST_CHECKED)
             }
             else {
-                postMastodon.value =
+                postMisskey.value =
                     isActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MISSKEY_DEFAULT_CHECKED)
             }
         }
