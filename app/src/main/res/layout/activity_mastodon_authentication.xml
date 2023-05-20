@@ -39,7 +39,7 @@
 
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/auth_button"
-                android:text="@string/sign_in"
+                android:text="@string/authorize"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 app:backgroundTint="@color/mastodonColorPrimary"
