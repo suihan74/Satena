@@ -274,6 +274,7 @@ class SatenaApplication : Application() {
             PreferenceKeyMigration.check(applicationContext)
             EntriesHistoryKeyMigration.check(applicationContext)
             FavoriteSitesKeyMigration.check(applicationContext)
+            BrowserSettingsKeyMigration.check(applicationContext)
         }
         Log.i("satena", "preferences updated")
     }

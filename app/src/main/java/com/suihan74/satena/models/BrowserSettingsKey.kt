@@ -1,5 +1,7 @@
 package com.suihan74.satena.models
 
+import android.content.Context
+import android.os.Build
 import com.suihan74.satena.models.browser.BookmarksListType
 import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
@@ -14,7 +16,7 @@ import java.time.ZonedDateTime
 /**
  * WebView版内部ブラウザの設定
  */
-@SharedPreferencesKey(fileName = "browser_settings", version = 0, latest = true)
+@SharedPreferencesKey(fileName = "browser_settings", version = 1, latest = true)
 enum class BrowserSettingsKey (
     override val valueType: Type,
     override val defaultValue: Any?
@@ -105,3 +107,38 @@ enum class BrowserSettingsKey (
     ).map { BlockUrlSetting(it, false) })
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// version migration
+////////////////////////////////////////////////////////////////////////////////
+
+@Suppress("deprecation")
+object BrowserSettingsKeyMigration {
+    fun check(context: Context) {
+        while (true) {
+            when (SafeSharedPreferences.version<BrowserSettingsKey>(context)) {
+                0 -> migrateFromVersion0(context)
+                else -> break
+            }
+        }
+    }
+
+    /**
+     * v0 -> v1
+     *
+     * API33以上で「強制的にダークテーマ」を選べなくする
+     */
+    private fun migrateFromVersion0(context: Context) {
+        val prefs = SafeSharedPreferences.create<BrowserSettingsKey>(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val prev = prefs.getObject<WebViewTheme>(BrowserSettingsKey.THEME)
+            prefs.edit {
+                if (prev == WebViewTheme.FORCE_DARK) {
+                    putObject(BrowserSettingsKey.THEME, WebViewTheme.DARK)
+                }
+            }
+        }
+        else {
+            prefs.edit {}
+        }
+    }
+}

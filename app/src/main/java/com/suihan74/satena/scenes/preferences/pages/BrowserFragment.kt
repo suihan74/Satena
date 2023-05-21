@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
+import android.os.Build
 import android.webkit.CookieManager
 import android.webkit.URLUtil
 import android.webkit.WebView
@@ -152,7 +153,9 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                     if (isForceDarkStrategySupported) {
                         add(WebViewTheme.DARK)
                     }
-                    add(WebViewTheme.FORCE_DARK)
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        add(WebViewTheme.FORCE_DARK)
+                    }
                 }
             }
             openEnumSelectionDialog(
