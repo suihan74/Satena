@@ -30,7 +30,7 @@ class MisskeyAuthenticationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        window.statusBarColor = getColor(R.color.misskeyBackground)
         binding = ActivityMisskeyAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
