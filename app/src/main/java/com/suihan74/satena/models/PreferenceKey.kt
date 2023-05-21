@@ -405,6 +405,8 @@ object PreferenceKeyMigration {
 
                 9 -> migrateFromVersion9(context)
 
+                10 -> migrateFromVersion10(context)
+
                 else -> break
             }
         }
