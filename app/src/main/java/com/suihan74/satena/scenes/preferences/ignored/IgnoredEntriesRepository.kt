@@ -17,9 +17,9 @@ import kotlinx.coroutines.withContext
 class IgnoredEntriesRepository(
     private val dao: IgnoredEntryDao
 ) {
-    private var _ignoredWordsForBookmarks : List<String> = emptyList()
+    private var _ignoredEntriesForBookmarks : List<IgnoredEntry> = emptyList()
     /** ブクマ用の非表示ワードリスト */
-    val ignoredWordsForBookmarks: List<String> get() = _ignoredWordsForBookmarks
+    val ignoredEntriesForBookmarks: List<IgnoredEntry> get() = _ignoredEntriesForBookmarks
 
     // ------ //
 
@@ -44,17 +44,17 @@ class IgnoredEntriesRepository(
                 _ignoredEntries.postValue(allEntries)
 
                 val forEntries = ArrayList<IgnoredEntry>()
-                val forBookmarks = ArrayList<String>()
+                val forBookmarks = ArrayList<IgnoredEntry>()
                 for (entry in allEntries) {
                     if (entry.target contains IgnoreTarget.ENTRY) {
                         forEntries.add(entry)
                     }
                     if (entry.target contains IgnoreTarget.BOOKMARK){
-                        forBookmarks.add(entry.query)
+                        forBookmarks.add(entry)
                     }
                 }
                 _ignoredEntriesForEntries.postValue(forEntries)
-                _ignoredWordsForBookmarks = forBookmarks
+                _ignoredEntriesForBookmarks = forBookmarks
             }
         }
     }
@@ -71,9 +71,8 @@ class IgnoredEntriesRepository(
     /** NGワードをロードする */
     suspend fun loadIgnoredWordsForBookmarks(forceUpdate: Boolean = false) = withContext(Dispatchers.IO) {
         ignoredEntriesCacheLock.withLock {
-            if (_ignoredWordsForBookmarks.isNullOrEmpty() || forceUpdate) {
-                _ignoredWordsForBookmarks = dao.getEntriesForBookmarks()
-                    .map { it.query }
+            if (_ignoredEntriesForBookmarks.isEmpty() || forceUpdate) {
+                _ignoredEntriesForBookmarks = dao.getEntriesForBookmarks()
             }
         }
     }
@@ -89,7 +88,7 @@ class IgnoredEntriesRepository(
                 dao.insert(entry)
                 dao.find(entry.type, entry.query)?.let {
                     if (it.target contains IgnoreTarget.BOOKMARK) {
-                        _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.plus(it.query)
+                        _ignoredEntriesForBookmarks = _ignoredEntriesForBookmarks.plus(it)
                     }
 
                     if (it.target contains IgnoreTarget.ENTRY) {
@@ -124,7 +123,7 @@ class IgnoredEntriesRepository(
                 }
 
                 if (entry.target contains IgnoreTarget.BOOKMARK) {
-                    _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.filterNot { it == entry.query }
+                    _ignoredEntriesForBookmarks = _ignoredEntriesForBookmarks.minus(entry)
                 }
 
                 _ignoredEntries.postValue(ignoredEntries.value.orEmpty().minus(entry))
@@ -151,8 +150,8 @@ class IgnoredEntriesRepository(
                     val existed = entries[existedIdx]
 
                     if (newItem.target contains IgnoreTarget.BOOKMARK) {
-                        _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.updateFirstOrPlus(newItem.query) {
-                            existed.target contains IgnoreTarget.BOOKMARK && it == existed.query
+                        _ignoredEntriesForBookmarks = _ignoredEntriesForBookmarks.updateFirstOrPlus(newItem) {
+                            existed.target contains IgnoreTarget.BOOKMARK && it == existed
                         }
                     }
 

@@ -14,14 +14,12 @@ class BookmarksActivityContract : ActivityResultContract<BookmarksActivityContra
         val targetUser: String? = null
     )
 
-    override fun createIntent(context: Context, input: Args?) =
+    override fun createIntent(context: Context, input: Args) =
         Intent(context, BookmarksActivity::class.java).apply {
-            input?.let { args ->
-                args.entry?.let { entry -> putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry) }
-                args.url?.let { url -> putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url) }
-                args.eid?.let { eid -> putExtra(BookmarksActivity.EXTRA_ENTRY_ID, eid) }
-                args.targetUser?.let { user -> putExtra(BookmarksActivity.EXTRA_TARGET_USER, user) }
-            }
+            input.entry?.let { entry -> putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry) }
+            input.url?.let { url -> putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url) }
+            input.eid?.let { eid -> putExtra(BookmarksActivity.EXTRA_ENTRY_ID, eid) }
+            input.targetUser?.let { user -> putExtra(BookmarksActivity.EXTRA_TARGET_USER, user) }
         }
 
     override fun parseResult(resultCode: Int, intent: Intent?) {}

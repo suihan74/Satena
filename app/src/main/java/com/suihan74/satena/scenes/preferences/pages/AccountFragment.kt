@@ -9,15 +9,19 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import com.suihan74.misskey.entity.Account
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInMastodonBinding
+import com.suihan74.satena.databinding.ListviewItemPrefsSignInMisskeyBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TootVisibility
+import com.suihan74.satena.models.misskey.NoteVisibility
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
+import com.suihan74.satena.scenes.authentication.MisskeyAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -49,17 +53,27 @@ class AccountViewModel(
 
     val accountMastodon = accountLoader.mastodonFlow
 
+    val accountMisskey = accountLoader.misskeyFlow
+
     private val mastodonStatusVisibility = createLiveDataEnum(
         PreferenceKey.MASTODON_POST_VISIBILITY,
         { it.ordinal },
         { TootVisibility.values()[it] }
     )
 
+    private val misskeyStatusVisibility = createLiveDataEnum(
+        PreferenceKey.MISSKEY_POST_VISIBILITY,
+        { it.ordinal },
+        { NoteVisibility.values()[it] }
+    )
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
-        combine(accountHatena, accountMastodon, ::Pair)
-            .onEach { load(fragment) }
+        combine(accountHatena, accountMastodon, accountMisskey, ::Triple)
+            .onEach {
+                load(fragment)
+            }
             .launchIn(viewModelScope)
 
         viewModelScope.launch {
@@ -92,7 +106,7 @@ class AccountViewModel(
 
         addSection(R.string.pref_accounts_service_name_mastodon)
         if (accountMastodon.value == null) {
-            addButton(context, R.string.sign_in) {
+            addButton(context, R.string.authorize) {
                 openMastodonAuthenticationActivity(context)
             }
         }
@@ -103,6 +117,24 @@ class AccountViewModel(
                     TootVisibility.values(),
                     mastodonStatusVisibility,
                     R.string.pref_accounts_mastodon_status_visibility_desc,
+                    fragmentManager
+                )
+            }
+        }
+
+        addSection(R.string.pref_accounts_service_name_misskey)
+        if (accountMisskey.value == null) {
+            addButton(context, R.string.authorize) {
+                openMisskeyAuthenticationActivity(context)
+            }
+        }
+        else {
+            add(PrefItemMisskeyAccount(fragmentManager, this@AccountViewModel))
+            addPrefItem(misskeyStatusVisibility, R.string.pref_accounts_misskey_status_visibility_desc) {
+                openEnumSelectionDialog(
+                    NoteVisibility.values(),
+                    misskeyStatusVisibility,
+                    R.string.pref_accounts_misskey_status_visibility_desc,
                     fragmentManager
                 )
             }
@@ -128,6 +160,14 @@ class AccountViewModel(
      */
     private fun openMastodonAuthenticationActivity(context: Context) {
         val intent = Intent(context, MastodonAuthenticationActivity::class.java)
+        context.startActivity(intent)
+    }
+
+    /**
+     * Mastodon認証画面を開く
+     */
+    private fun openMisskeyAuthenticationActivity(context: Context) {
+        val intent = Intent(context, MisskeyAuthenticationActivity::class.java)
         context.startActivity(intent)
     }
 
@@ -167,6 +207,23 @@ class AccountViewModel(
             .setPositiveButton(R.string.dialog_ok) {
                 viewModelScope.launch {
                     accountLoader.deleteMastodonAccount()
+                }
+            }
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /**
+     * Misskeyアカウントを削除する
+     */
+    private fun openMisskeyAccountDeletionDialog(fragmentManager: FragmentManager) {
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_accounts_delete_misskey_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch {
+                    accountLoader.deleteMisskeyAccount()
                 }
             }
             .create()
@@ -264,6 +321,58 @@ class AccountViewModel(
             val instance = uri.host ?: ""
 
             textView.text = String.format("%s@%s", account.userName, instance)
+        }
+    }
+
+    // ------ //
+
+    /**
+     * サインイン済みのMastodonアカウントボタン
+     */
+    class PrefItemMisskeyAccount(
+        private val fragmentManager: FragmentManager,
+        private val viewModel: AccountViewModel
+    ) : PreferencesAdapter.Item {
+        override val layoutId: Int = R.layout.listview_item_prefs_sign_in_misskey
+
+        override val description: String
+            get() = viewModel.accountMisskey.value?.username ?: "misskey"
+
+        override fun bind(binding: ViewDataBinding) {
+            binding.alsoAs<ListviewItemPrefsSignInMisskeyBinding> {
+                it.vm = viewModel
+
+                it.root.setOnClickListener { v ->
+                    viewModel.openMisskeyAuthenticationActivity(v.context)
+                }
+
+                it.deleteButton.setOnClickListener {
+                    viewModel.openMisskeyAccountDeletionDialog(fragmentManager)
+                }
+            }
+        }
+
+        override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemMisskeyAccount && new is PrefItemMisskeyAccount &&
+                    old.viewModel == new.viewModel
+
+        override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemMisskeyAccount && new is PrefItemMisskeyAccount &&
+                    old.viewModel.accountMisskey.value == new.viewModel.accountMisskey.value
+    }
+
+    object MisskeyAccountBindingAdapters {
+        /**
+         * "ユーザー名@インスタンス"を表示する
+         */
+        @JvmStatic
+        @BindingAdapter("userName")
+        fun bindUserNameAndInstance(textView: TextView, account: Account?) {
+            if (account == null) {
+                textView.text = ""
+                return
+            }
+            textView.text = account.name
         }
     }
 }

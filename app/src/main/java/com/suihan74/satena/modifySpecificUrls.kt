@@ -122,7 +122,7 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
                     // "https://b.hatena.ne.jp/entry/{eid}"は通常の法則に則ったURLのブコメページにリダイレクトされる
                     // modifySpecificUrls()では、さらにそのブコメページのブコメ先エントリURLに変換する
                     // 例) [in] /entry/18625960 ==> /entry/s/www.google.com ==> https://www.google.com [out]
-                    val htmlTag = root.getElementsByTag("html").first()
+                    val htmlTag = root.getElementsByTag("html").first()!!
                     // コメントページのURLの場合
                     when (htmlTag.attr("data-page-subtype")) {
                         "comment" -> htmlTag.attr("data-stable-request-url")

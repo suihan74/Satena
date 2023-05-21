@@ -31,11 +31,20 @@
 
     <style name="MastodonLoginEditTextStyle" parent="Widget.AppCompat.EditText">
         <item name="colorControlNormal">@color/colorControlNormal</item>
-        <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="colorControlActivated">@color/mastodonColorPrimary</item>
         <item name="android:textCursorDrawable">@color/textCursorDrawable</item>
         <item name="android:textColor">@color/mastodonTextColor</item>
         <item name="android:textColorHint">@color/textColorHint</item>
-        <item name="android:textColorHighlight">@color/colorPrimary</item>
+        <item name="android:textColorHighlight">@color/mastodonColorPrimary</item>
+    </style>
+
+    <style name="MisskeyLoginEditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="colorControlNormal">@color/colorControlNormal</item>
+        <item name="colorControlActivated">@color/misskeyColorPrimary</item>
+        <item name="android:textCursorDrawable">@color/textCursorDrawable</item>
+        <item name="android:textColor">@color/misskeyTextColor</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+        <item name="android:textColorHighlight">@color/misskeyColorPrimary</item>
     </style>
 
     <!-- アラートダイアログのタイトル部分 -->

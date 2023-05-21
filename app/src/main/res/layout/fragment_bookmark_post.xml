@@ -168,6 +168,25 @@
                 android:layout_height="wrap_content"/>
 
         <ToggleButton
+                android:id="@+id/post_misskey_toggle"
+                android:checked="@={vm.postMisskey}"
+                android:visibility="@{vm.signedInMisskey}"
+                android:alpha="@{!vm.private}"
+                android:enabled="@{!vm.private}"
+                android:foreground="@drawable/ic_misskey_logo"
+                android:foregroundTint="@color/post_dialog_toggle_button"
+                android:background="?selectableItemBackgroundBorderless"
+                android:textColor="#00000000"
+                app:tooltipText="@{@string/hint_misskey_toggle}"
+                android:layout_marginStart="16dp"
+                app:layout_constraintTop_toTopOf="@id/post_mastodon_toggle"
+                app:layout_constraintBottom_toBottomOf="@id/post_mastodon_toggle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/post_mastodon_toggle"
+                android:layout_width="24dp"
+                android:layout_height="16.82dp"/>
+
+        <ToggleButton
                 android:id="@+id/post_mastodon_toggle"
                 android:checked="@={vm.postMastodon}"
                 android:visibility="@{vm.signedInMastodon}"
@@ -181,7 +200,7 @@
                 android:layout_marginStart="16dp"
                 app:layout_constraintTop_toTopOf="@id/post_button"
                 app:layout_constraintBottom_toBottomOf="@id/post_button"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@id/post_misskey_toggle"
                 app:layout_constraintEnd_toStartOf="@id/post_twitter_toggle"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
@@ -219,6 +238,22 @@
                 app:layout_constraintTop_toTopOf="@id/post_button"
                 app:layout_constraintBottom_toBottomOf="@id/post_button"
                 app:layout_constraintStart_toEndOf="@id/post_twitter_toggle"
+                app:layout_constraintEnd_toStartOf="@id/share_toggle"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <ToggleButton
+                android:id="@+id/share_toggle"
+                android:checked="@={vm.share}"
+                android:foreground="@drawable/ic_baseline_share"
+                android:foregroundTint="@color/post_dialog_toggle_button"
+                android:background="?selectableItemBackgroundBorderless"
+                android:textColor="#00000000"
+                app:tooltipText="@{@string/hint_share_toggle}"
+                android:layout_marginStart="16dp"
+                app:layout_constraintTop_toTopOf="@id/post_button"
+                app:layout_constraintBottom_toBottomOf="@id/post_button"
+                app:layout_constraintStart_toEndOf="@id/post_facebook_toggle"
                 app:layout_constraintEnd_toStartOf="@id/post_private_toggle"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
@@ -234,14 +269,14 @@
                 android:layout_marginStart="16dp"
                 app:layout_constraintTop_toTopOf="@id/post_button"
                 app:layout_constraintBottom_toBottomOf="@id/post_button"
-                app:layout_constraintStart_toEndOf="@id/post_facebook_toggle"
+                app:layout_constraintStart_toEndOf="@id/share_toggle"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
 
         <FrameLayout
                 android:id="@+id/click_guard"
                 android:visibility="@{vm.nowLoading}"
-                tools:visibility="visible"
+                tools:visibility="invisible"
                 android:clickable="true"
                 android:focusable="true"
                 android:focusableInTouchMode="true"

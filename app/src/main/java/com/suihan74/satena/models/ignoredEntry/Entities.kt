@@ -1,6 +1,8 @@
 package com.suihan74.satena.models.ignoredEntry
 
 import androidx.room.*
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.BookmarkWithStarCount
 import com.suihan74.hatenaLib.Entry
 
 @Entity(
@@ -12,11 +14,13 @@ import com.suihan74.hatenaLib.Entry
     IgnoreTargetConverter::class
 )
 data class IgnoredEntry (
-    var type: IgnoredEntryType = IgnoredEntryType.URL,
+    val type: IgnoredEntryType = IgnoredEntryType.URL,
 
-    var query: String = "",
+    val query: String = "",
 
-    var target: IgnoreTarget = IgnoreTarget.ALL,
+    val target: IgnoreTarget = IgnoreTarget.ALL,
+
+    val asRegex: Boolean = false,
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
@@ -26,28 +30,111 @@ data class IgnoredEntry (
         fun createDummy(
             type: IgnoredEntryType = IgnoredEntryType.URL,
             query: String = "",
-            target: IgnoreTarget = IgnoreTarget.ALL
+            target: IgnoreTarget = IgnoreTarget.ALL,
+            isRegex: Boolean = false
         ) : IgnoredEntry =
-            IgnoredEntry(type, query, target, id = -1)
+            IgnoredEntry(
+                type = type,
+                query = query,
+                target = target,
+                asRegex = isRegex,
+                id = -1
+            )
+    }
+
+    @delegate:Transient
+    @delegate:Ignore
+    private val regex by lazy { Regex(query) }
+
+    // ------ //
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is IgnoredEntry) return false
+        return type == other.type && query == other.query && asRegex == other.asRegex
+    }
+
+    override fun hashCode(): Int {
+        return (type.hashCode() + query.hashCode() + asRegex.hashCode()) * 31
     }
 
     // ------ //
 
-    fun isMatched(entry: Entry) = when (type) {
-        IgnoredEntryType.URL ->
-            entry.url.startsWith("https://$query") || entry.url.startsWith("http://$query") ||
-            entry.adUrl?.startsWith("https://$query") == true || entry.adUrl?.startsWith("http://$query") == true
+    fun match(entry: Entry) : Boolean =
+        if (asRegex) matchWithRegex(entry)
+        else matchWithPlain(entry)
 
-        IgnoredEntryType.TEXT -> target.contains(IgnoreTarget.ENTRY) && entry.title.contains(query)
+    private fun matchWithRegex(entry: Entry) : Boolean = when (type) {
+        IgnoredEntryType.URL -> {
+            entry.adUrl?.let { adUrl ->
+                regex.containsMatchIn(entry.url) || regex.containsMatchIn(adUrl)
+            } ?: regex.containsMatchIn(entry.url)
+        }
+
+        IgnoredEntryType.TEXT -> {
+            target.contains(IgnoreTarget.ENTRY) && regex.containsMatchIn(entry.title)
+        }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other !is IgnoredEntry) return false
-        return type == other.type && query == other.query
+    private fun matchWithPlain(entry: Entry) : Boolean = when (type) {
+        IgnoredEntryType.URL -> {
+            entry.adUrl?.let { adUrl ->
+                matchPlainUrl(entry.url) || matchPlainUrl(adUrl)
+            } ?: matchPlainUrl(entry.url)
+        }
+
+        IgnoredEntryType.TEXT -> {
+            target.contains(IgnoreTarget.ENTRY) && entry.title.contains(query)
+        }
     }
 
-    override fun hashCode(): Int {
-        return (type.hashCode() + query.hashCode()) * 31
+    private fun matchPlainUrl(url: String) : Boolean {
+        val targetUrl = when {
+            url.startsWith("https://") -> "https://$query"
+            else -> "http://$query"
+        }
+        return url.startsWith(targetUrl)
+    }
+
+    // ------ //
+
+    fun match(bookmark: BookmarkWithStarCount) : Boolean =
+        if (asRegex) matchWithRegex(user = bookmark.user, comment = bookmark.comment, tags = bookmark.tags)
+        else matchWithPlain(user = bookmark.user, comment = bookmark.comment, tags = bookmark.tags)
+
+    fun match(bookmark: Bookmark) : Boolean =
+        if (asRegex) matchWithRegex(user = bookmark.user, comment = bookmark.comment, tags = bookmark.tags)
+        else matchWithPlain(user = bookmark.user, comment = bookmark.comment, tags = bookmark.tags)
+
+    private fun matchWithRegex(user: String, comment: String, tags: List<String>) : Boolean = when(type) {
+        IgnoredEntryType.URL -> {
+            target.contains(IgnoreTarget.BOOKMARK)
+                    && (comment.contains("https://$query") || comment.contains("http://$query"))
+        }
+
+        IgnoredEntryType.TEXT -> {
+            target.contains(IgnoreTarget.BOOKMARK)
+                    && (
+                    regex.containsMatchIn(comment)
+                            || regex.containsMatchIn(user)
+                            || tags.any { regex.containsMatchIn(it) }
+                    )
+        }
+    }
+
+    private fun matchWithPlain(user: String, comment: String, tags: List<String>) : Boolean = when(type) {
+        IgnoredEntryType.URL -> {
+            target.contains(IgnoreTarget.BOOKMARK)
+                    && (comment.contains("https://$query") || comment.contains("http://$query"))
+        }
+
+        IgnoredEntryType.TEXT -> {
+            target.contains(IgnoreTarget.BOOKMARK)
+                    && (
+                    comment.contains(query)
+                            || user.contains(query)
+                            || tags.any { it.contains(query) }
+                    )
+        }
     }
 }
 

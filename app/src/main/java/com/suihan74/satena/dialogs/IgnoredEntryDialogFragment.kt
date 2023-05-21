@@ -29,6 +29,8 @@ import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 import kotlin.math.max
 
 class IgnoredEntryDialogFragment : DialogFragment() {
@@ -38,6 +40,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         private const val ARG_EDIT_MODE = "ARG_EDIT_MODE"
         private const val ARG_MODIFYING_ENTRY = "ARG_MODIFYING_ENTRY"
         private const val ARG_INITIAL_TARGET = "ARG_INITIAL_TARGET"
+        private const val ARG_AS_REGEX = "ARG_AS_REGEX"
 
         fun createInstance(
             url: String = "",
@@ -67,6 +70,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putObject(ARG_MODIFYING_ENTRY, ignoredEntry)
             putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.id }
             putBoolean(ARG_EDIT_MODE, ignoredEntry.id >= 0)
+            putBoolean(ARG_AS_REGEX, ignoredEntry.asRegex)
         }
     }
 
@@ -168,7 +172,9 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         }
         binding.targetEntryCheckbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
         binding.targetBookmarkCheckbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
+        binding.asRegexCheckbox.setOnCheckedChangeListener { _, checked -> viewModel.asRegex.value = checked }
         setIgnoreTarget(binding, initialIgnoreTarget)
+        binding.asRegexCheckbox.isChecked = viewModel.asRegex.value ?: false
 
         return createBuilder()
             .setTitle(R.string.ignored_entry_dialog_title)
@@ -206,6 +212,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             when (it) {
                 is EmptyException -> showToast(R.string.msg_ignored_entry_dialog_empty_query)
                 is AlreadyExistedException -> showToast(R.string.msg_ignored_entry_dialog_already_existed)
+                is PatternSyntaxException -> showToast(R.string.msg_ignored_entry_dialog_illegal_regex)
                 else -> showToast(R.string.msg_ignored_entry_dialog_failed)
             }
         }.onSuccess { ignoredEntry ->
@@ -292,6 +299,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             MutableLiveData(args.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.id } ?: IgnoreTarget.ENTRY)
         }
 
+        val asRegex by lazy {
+            MutableLiveData<Boolean>(args.getBoolean(ARG_AS_REGEX))
+        }
+
         // ------ //
 
         /** 登録処理完了後に呼び出すリスナ */
@@ -305,16 +316,28 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
         // ------ //
 
-        fun createIgnoredEntry(id: Int) = IgnoredEntry(
-            type = when (selectedTab.value) {
-                IgnoredEntryDialogTab.URL -> IgnoredEntryType.URL
-                IgnoredEntryDialogTab.TEXT -> IgnoredEntryType.TEXT
-                else -> throw RuntimeException("invalid tab")
-            },
-            query = text,
-            target = ignoreTarget.value!!,
-            id = max(id, 0)
-        )
+        /**
+         * @throws PatternSyntaxException コンパイルできない正規表現
+         * @throws RuntimeException 洗濯タブがおかしい
+         */
+        private fun createIgnoredEntry(id: Int) : IgnoredEntry {
+            val asRegex = asRegex.value ?: false
+            if (asRegex) {
+                Pattern.compile(text)
+            }
+
+            return IgnoredEntry(
+                type = when (selectedTab.value) {
+                    IgnoredEntryDialogTab.URL -> IgnoredEntryType.URL
+                    IgnoredEntryDialogTab.TEXT -> IgnoredEntryType.TEXT
+                    else -> throw RuntimeException("invalid tab")
+                },
+                query = text,
+                target = ignoreTarget.value!!,
+                asRegex = asRegex,
+                id = max(id, 0)
+            )
+        }
 
         @MainThread
         fun selectTab(ignoredEntryType: IgnoredEntryType) {
@@ -340,6 +363,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
          * 登録処理
          *
          * @throws EmptyException クエリ文字列が空
+         * @throws PatternSyntaxException コンパイルできない正規表現
          * @throws AlreadyExistedException 重複する設定
          * @throws TaskFailureException 登録処理中に何らかのエラー
          */
@@ -348,10 +372,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 throw EmptyException()
             }
 
-            val ignoredEntry = createIgnoredEntry(modifyingEntry?.id ?: 0)
-            val modifyMode = modifyingEntry != null && modifyingEntry.id >= 0
+            return runCatching {
+                val ignoredEntry = createIgnoredEntry(modifyingEntry?.id ?: 0)
+                val modifyMode = modifyingEntry != null && modifyingEntry.id >= 0
 
-            runCatching {
                 if (modifyMode) {
                     repository.updateIgnoredEntry(ignoredEntry)
                 }
@@ -362,14 +386,15 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 withContext(Dispatchers.Main) {
                     onCompleted?.invoke(ignoredEntry, dialogFragment)
                 }
+
+                ignoredEntry
             }.onFailure { e ->
                 throw when (e) {
                     is AlreadyExistedException -> e
+                    is PatternSyntaxException -> e
                     else -> TaskFailureException(cause = e)
                 }
-            }
-
-            return ignoredEntry
+            }.getOrThrow()
         }
     }
 }

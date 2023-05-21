@@ -6,6 +6,7 @@ import android.view.Gravity
 import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.models.browser.ReadEntryLifetime
+import com.suihan74.satena.models.misskey.NoteVisibility
 import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -56,6 +57,11 @@ enum class PreferenceKey(
 
     /** Mastodon投稿時の公開範囲 */
     MASTODON_POST_VISIBILITY(typeInfo<Int>(), TootVisibility.PUBLIC.ordinal),
+
+    /** Misskeyのアクセストークン(暗号化) */
+    MISSKEY_ACCESS_TOKEN(typeInfo<String>(), ""),
+
+    MISSKEY_POST_VISIBILITY(typeInfo<Int>(), NoteVisibility.Public.ordinal),
 
     ////////////////////////////////////////
     // generals
@@ -244,6 +250,9 @@ enum class PreferenceKey(
     /** 最後に開いた投稿ダイアログでのMastodon連携状態 */
     POST_BOOKMARK_MASTODON_LAST_CHECKED(typeInfo<Boolean>(), false),
 
+    /** 最後に開いた投稿ダイアログでのMisskey連携状態 */
+    POST_BOOKMARK_MISSKEY_LAST_CHECKED(typeInfo<Boolean>(), false),
+
     /** 最後に開いた投稿ダイアログでのFacebook連携状態 */
     POST_BOOKMARK_FACEBOOK_LAST_CHECKED(typeInfo<Boolean>(), false),
 
@@ -255,6 +264,9 @@ enum class PreferenceKey(
 
     /** 最後に開いた投稿ダイアログでのMastodon連携状態 */
     POST_BOOKMARK_MASTODON_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのMisskey連携状態 */
+    POST_BOOKMARK_MISSKEY_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
 
     /** 最後に開いた投稿ダイアログでのFacebook連携状態 */
     POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
@@ -392,6 +404,8 @@ object PreferenceKeyMigration {
                 8 -> migrateFromVersion8(context)
 
                 9 -> migrateFromVersion9(context)
+
+                10 -> migrateFromVersion10(context)
 
                 else -> break
             }

@@ -857,7 +857,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             val bodyBytes = response.body!!.use { it.bytes() }
             val bodyStr = bodyBytes.toString(Charsets.UTF_8)
             val doc = Jsoup.parse(bodyStr)
-            val root = doc.getElementsByTag("html").first()
+            val root = doc.getElementsByTag("html").first()!!
 
             val eid = root.attr("data-entry-eid").toLong()
             val count = root.attr("data-bookmark-count").toInt()
@@ -1267,7 +1267,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         get(apiUrl).use { response ->
             if (!response.isSuccessful) throw ConnectionFailureException("failed to delete a star")
             val doc = Jsoup.parse(response.body!!.byteStream(), "UTF-8", S_BASE_URL)
-            val rkmInputTag = doc.getElementsByAttributeValue("name", "rkm").first()
+            val rkmInputTag = doc.getElementsByAttributeValue("name", "rkm").first()!!
             return rkmInputTag.attr("value")
         }
     }
@@ -1662,7 +1662,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             val spaceRegex = Regex("""\s+""")
 
             // 基本情報
-            val (iconUrl, description) = html.getElementById("user-header-body").let { header ->
+            val (iconUrl, description) = html.getElementById("user-header-body")!!.let { header ->
                 val iconUrl = header.getElementsByClass("userimg").firstOrNull()?.attr("src") ?: ""
                 val description = header.getElementsByClass("info").firstOrNull()?.wholeText() ?: ""
                 iconUrl to spaceRegex.replace(description, "")
@@ -1694,7 +1694,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             } ?: emptyList()
 
             // 使用中のサービス一覧
-            val servicesUl = html.getElementsByClass("hatena-fotolife floatlist").first()
+            val servicesUl = html.getElementsByClass("hatena-fotolife floatlist").first()!!
             val services = servicesUl.getElementsByTag("li").mapNotNull m@ { service ->
                 val image = service.getElementsByClass("profile-image").firstOrNull() ?: return@m null
                 val name = image.attr("title")
@@ -1793,7 +1793,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                                 tag.wholeText()
                             }
                             val comment = reactionMain.getElementsByClass("js-comment").firstOrNull()?.wholeText() ?: ""
-                            val timestampText = reactionMain.getElementsByClass("$article-reaction-timestamp").first().wholeText()
+                            val timestampText = reactionMain.getElementsByClass("$article-reaction-timestamp").first()!!.wholeText()
 
                             // スター情報はJSで後から挿入されるようなのでhtmlから取得できない
 
@@ -1987,13 +1987,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
             val root = connection.get()
 
             val tagBody = root.getElementById("tag-body")
-            val items = tagBody.allElements.filter { item ->
+            val items = tagBody?.allElements?.filter { item ->
                 item.tagName() == "div" && item.children().any { it.tagName() == "header" }
-            }
+            } ?: emptyList()
 
             return@withContext items.map { item ->
-                val header = item.getElementsByTag("header").first()
-                val title = header.getElementsByTag("h1").first().wholeText()
+                val header = item.getElementsByTag("header").first()!!
+                val title = header.getElementsByTag("h1").first()!!.wholeText()
                 val headerExtras = header.getElementsByTag("div")
                 val category = headerExtras[1].wholeText()
                 val kana = headerExtras[2].wholeText()

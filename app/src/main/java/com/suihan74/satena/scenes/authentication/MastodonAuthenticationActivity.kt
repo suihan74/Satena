@@ -33,7 +33,7 @@ class MastodonAuthenticationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        window.statusBarColor = getColor(R.color.mastodonBackground)
         binding = ActivityMastodonAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
