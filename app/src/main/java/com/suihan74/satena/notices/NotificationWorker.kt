@@ -35,6 +35,35 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
 {
     companion object {
         private const val NOTICE_CHANNEL_ID = "satena_notification"
+
+        /** 通知チャンネルを準備する */
+        fun initializeChannel(notificationManager: NotificationManagerCompat, channelName: String) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
+            // グループ生成
+            notificationManager.createNotificationChannelGroups(
+                listOf(
+                    NotificationChannelGroup(NOTICE_CHANNEL_ID, channelName)
+                )
+            )
+
+            // チャンネル生成
+            if (notificationManager.getNotificationChannel(NOTICE_CHANNEL_ID) != null) {
+                notificationManager.deleteNotificationChannel(NOTICE_CHANNEL_ID)
+            }
+            val noticeChannel = NotificationChannel(
+                NOTICE_CHANNEL_ID,
+                channelName,
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                group = NOTICE_CHANNEL_ID
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                enableVibration(true)
+                enableLights(true)
+                setShowBadge(false)
+            }
+            notificationManager.createNotificationChannel(noticeChannel)
+        }
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
@@ -85,35 +114,6 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
         }
     }
 
-    /** 通知チャンネルを準備する */
-    private fun initializeChannel(notificationManager: NotificationManagerCompat, channelName: String) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-
-        // グループ生成
-        notificationManager.createNotificationChannelGroups(
-            listOf(
-                NotificationChannelGroup(NOTICE_CHANNEL_ID, channelName)
-            )
-        )
-
-        // チャンネル生成
-        if (notificationManager.getNotificationChannel(NOTICE_CHANNEL_ID) != null) {
-            notificationManager.deleteNotificationChannel(NOTICE_CHANNEL_ID)
-        }
-        val noticeChannel = NotificationChannel(
-            NOTICE_CHANNEL_ID,
-            channelName,
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            group = NOTICE_CHANNEL_ID
-            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            enableVibration(true)
-            enableLights(true)
-            setShowBadge(false)
-        }
-        notificationManager.createNotificationChannel(noticeChannel)
-    }
-
     /** 通知を表示する */
     private suspend fun invokeNotice(
         context: Context,
@@ -124,9 +124,6 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
         if (checkFromSpam(prefs, notice)) return
 
         val notificationManager = NotificationManagerCompat.from(context)
-
-        val channelName = context.getString(R.string.notification_channel_name)
-        initializeChannel(notificationManager, channelName)
 
         val title = context.getString(R.string.notice_title)
         val message = makeSpannedFromHtml(notice.message(context)).toString()

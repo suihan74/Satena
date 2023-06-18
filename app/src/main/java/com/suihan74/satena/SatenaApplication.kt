@@ -284,6 +284,11 @@ class SatenaApplication : Application() {
     /** 通知確認をバックグラウンドで開始 */
     fun startCheckingNotificationsWorker(context: Context, forceReplace: Boolean = false) {
         val result = runCatching {
+            // チャンネルを初期化
+            val notificationManager = NotificationManagerCompat.from(applicationContext)
+            val channelName = applicationContext.getString(R.string.notification_channel_name)
+            NotificationWorker.initializeChannel(notificationManager, channelName)
+
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             val signedIn = prefs.contains(PreferenceKey.HATENA_RK)
             val enabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
