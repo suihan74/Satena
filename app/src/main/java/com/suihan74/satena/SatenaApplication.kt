@@ -3,6 +3,8 @@ package com.suihan74.satena
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -61,17 +63,21 @@ class SatenaApplication : Application() {
 
     // ------ //
 
+    private val packageInfo: PackageInfo
+        get() =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+            }
+            else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(packageName, 0)
+            }
+
     /** アプリのバージョン番号 */
-    val versionCode: Long by lazy {
-        val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        PackageInfoCompat.getLongVersionCode(packageInfo)
-    }
+    val versionCode: Long by lazy { PackageInfoCompat.getLongVersionCode(packageInfo) }
 
     /** アプリのバージョン名 */
-    val versionName: String by lazy {
-        val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        packageInfo.versionName
-    }
+    val versionName: String by lazy { packageInfo.versionName }
 
     /** アプリのメジャーバージョン */
     val majorVersionCode: Long by lazy { getMajorVersion(versionCode) }
@@ -318,7 +324,7 @@ class SatenaApplication : Application() {
 
                 manager.enqueueUniquePeriodicWork(
                     WORKER_TAG_CHECKING_NOTICES,
-                    if (forceReplace) ExistingPeriodicWorkPolicy.REPLACE
+                    if (forceReplace) ExistingPeriodicWorkPolicy.UPDATE
                     else ExistingPeriodicWorkPolicy.KEEP,
                     workRequest
                 )
