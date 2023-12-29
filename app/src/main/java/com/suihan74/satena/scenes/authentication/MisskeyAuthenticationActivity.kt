@@ -86,7 +86,7 @@ class MisskeyAuthenticationActivity : AppCompatActivity() {
             instance = instance,
             name = "Satena",
             description = "はてなブックマークの非公式アプリ",
-            permissions = listOf("write:notes"),
+            permissions = listOf("write:notes","read:account"),
             callbackUrl = "satena-misskey://$instance/callback"
         )
         val session = Misskey.auth.generateSession(appCredential)
