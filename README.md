@@ -2,6 +2,8 @@
 ## 言い訳
 バージョン2.0開発作業中のため、現在こちらへの機能追加は一旦停止しています。（新しくバグなど見つかったら修正します）
 
+-> next [Satena2](https://github.com/suihan74/Satena2)
+
 - Jetpack Compose への置き換え
 
 - 全コードの刷新
