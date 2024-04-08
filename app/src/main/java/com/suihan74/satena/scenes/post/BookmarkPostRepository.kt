@@ -152,9 +152,11 @@ class BookmarkPostRepository(
 
         if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
             private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED)
+            share.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SHARE_LAST_CHECKED)
         }
         else {
             private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED)
+            share.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SHARE_DEFAULT_CHECKED)
         }
     }
 
