@@ -5,27 +5,22 @@ enum class ReportCategory(
     val description: String
 ) {
     SPAM(
-        "report.type.spam",
+        "spam",
         "スパム行為"
     ),
 
-    DEFAMATION(
-        "report.type.fud",
-        "ご自身に対する誹謗中傷・嫌がらせ"
-    ),
-
     CRIME_NOTICE(
-        "report.type.crime",
+        "crime_notice",
         "犯罪予告"
     ),
 
     INSULT(
-        "report.type.discrimination",
-        "差別、侮辱を目的とした利用"
+        "insult",
+        "差別、侮辱、嫌がらせ"
     ),
 
     OTHERS(
-        "report.type.misc",
+        "others",
         "その他"
     );
 

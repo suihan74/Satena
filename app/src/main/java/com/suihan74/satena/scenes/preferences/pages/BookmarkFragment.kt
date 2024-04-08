@@ -10,12 +10,23 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.BookmarkPostActivityGravity
+import com.suihan74.satena.models.CustomDigestSettingsKey
+import com.suihan74.satena.models.ExtraScrollingAlignment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.bookmarks.repository.mutableCustomDigestRepository
 import com.suihan74.satena.scenes.post.TagsListOrder
-import com.suihan74.satena.scenes.preferences.*
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.PreferencesAdapter
+import com.suihan74.satena.scenes.preferences.SliderDialog
+import com.suihan74.satena.scenes.preferences.addButton
+import com.suihan74.satena.scenes.preferences.addPrefItem
+import com.suihan74.satena.scenes.preferences.addPrefToggleItem
+import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -155,8 +166,18 @@ class BookmarkViewModel(
     )
 
     /** プライベート投稿するかのデフォルト設定 */
+    val defaultShareAfterPosting = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_SHARE_DEFAULT_CHECKED
+    )
+
+    /** プライベート投稿するかのデフォルト設定 */
     val defaultPrivatePost = createLiveData<Boolean>(
         PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED
+    )
+
+    /** Misskeyに連携投稿するかのデフォルト設定 */
+    val defaultPostMisskey = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_MISSKEY_DEFAULT_CHECKED
     )
 
     /** Mastodonに連携投稿するかのデフォルト設定 */
@@ -173,6 +194,8 @@ class BookmarkViewModel(
     val defaultPostFacebook = createLiveData<Boolean>(
         PreferenceKey.POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED
     )
+
+    val signedInMisskey = MutableLiveData<Boolean>()
 
     val signedInMastodon = MutableLiveData<Boolean>()
 
@@ -217,13 +240,14 @@ class BookmarkViewModel(
     override fun onCreateView(fragment: ListPreferencesFragment) {
         super.onCreateView(fragment)
 
-        combine(accountLoader.hatenaFlow, accountLoader.mastodonFlow, ::Pair)
-            .onEach { (hatena, mastodon) ->
+        combine(accountLoader.hatenaFlow, accountLoader.mastodonFlow, accountLoader.misskeyFlow, ::Triple)
+            .onEach { (hatena, mastodon, misskey) ->
                 val previousSignedInHatena = signedInHatena.value
                 signedInHatena.value = hatena != null
                 signedInMastodon.value = mastodon?.isLocked == false
                 signedInTwitter.value = hatena?.isOAuthTwitter ?: false
                 signedInFacebook.value = hatena?.isOAuthFaceBook ?: false
+                signedInMisskey.value = misskey?.isLocked == false
                 // はてなのアカウントが解除されたら投稿に関するメニューを隠す
                 if (previousSignedInHatena != null && previousSignedInHatena != signedInHatena.value) {
                     load(fragment)

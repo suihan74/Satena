@@ -259,6 +259,9 @@ enum class PreferenceKey(
     /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
     POST_BOOKMARK_PRIVATE_LAST_CHECKED(typeInfo<Boolean>(), false),
 
+    /** 最後に開いた投稿ダイアログでの共有選択状態 */
+    POST_BOOKMARK_SHARE_LAST_CHECKED(typeInfo<Boolean>(), false),
+
     /** 最後に開いた投稿ダイアログでのTwitter連携状態 */
     POST_BOOKMARK_TWITTER_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
 
@@ -273,6 +276,9 @@ enum class PreferenceKey(
 
     /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
     POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでの共有選択状態 */
+    POST_BOOKMARK_SHARE_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
 
     /** 投稿ダイアログの表示位置(Y) */
     POST_BOOKMARK_VERTICAL_GRAVITY(typeInfo<Int>(), BookmarkPostActivityGravity.DEFAULT.ordinal),
