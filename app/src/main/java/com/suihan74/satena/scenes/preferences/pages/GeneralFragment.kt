@@ -1,8 +1,18 @@
 package com.suihan74.satena.scenes.preferences.pages
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -10,9 +20,18 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.AppUpdateNoticeMode
+import com.suihan74.satena.models.DialogThemeSetting
+import com.suihan74.satena.models.GravitySetting
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
-import com.suihan74.satena.scenes.preferences.*
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.PreferencesTab
+import com.suihan74.satena.scenes.preferences.addButton
+import com.suihan74.satena.scenes.preferences.addPrefItem
+import com.suihan74.satena.scenes.preferences.addPrefToggleItem
+import com.suihan74.satena.scenes.preferences.addSection
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.NoticeVerbCompat
 import com.suihan74.utilities.extensions.alsoAs
@@ -132,10 +151,30 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     override fun onCreateView(fragment: ListPreferencesFragment) {
         super.onCreateView(fragment)
 
+        if (lifecycleObserver == null) {
+            lifecycleObserver = LifecycleObserver(fragment.requireActivity().activityResultRegistry)
+            fragment.lifecycle.addObserver(lifecycleObserver!!)
+        }
+
         // 通知確認タスクの有効無効を切り替える
         checkNotices.observe(fragment.viewLifecycleOwner) {
             val app = SatenaApplication.instance
-            if (it) app.startCheckingNotificationsWorker(app, forceReplace = true)
+            if (it) {
+                val permission =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        ActivityCompat.checkSelfPermission(
+                            app,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    }
+                    else PackageManager.PERMISSION_GRANTED
+                if (permission != PackageManager.PERMISSION_GRANTED) {
+                    lifecycleObserver?.launchPermissionRequest()
+                }
+                else {
+                    app.startCheckingNotificationsWorker(app, forceReplace = true)
+                }
+            }
             else app.stopCheckingNotificationsWorker(app)
         }
 
@@ -388,5 +427,37 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         val num = rawSize / 1024.0.pow(exp)
 
         return String.format("%.1f%s%s", num, metric, unit.orEmpty())
+    }
+
+    // ------ //
+
+    private var lifecycleObserver : LifecycleObserver? = null
+
+    inner class LifecycleObserver(
+        private val registry: ActivityResultRegistry
+    ) : DefaultLifecycleObserver {
+        private lateinit var requestNotifyPermissionLauncher : ActivityResultLauncher<String>
+
+        override fun onCreate(owner: LifecycleOwner) {
+            requestNotifyPermissionLauncher = registry.register(
+                "RequestNotifyPermissionLauncher",
+                owner,
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted ->
+                if (isGranted) {
+                    val app = SatenaApplication.instance
+                    app.startCheckingNotificationsWorker(app, forceReplace = true)
+                }
+                else {
+                    // todo in case of forbidden
+                }
+            }
+        }
+
+        fun launchPermissionRequest() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestNotifyPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 }
