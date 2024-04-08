@@ -15,7 +15,11 @@ import com.suihan74.satena.models.Theme
 import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.models.misskey.NoteVisibility
 import com.suihan74.satena.modifySpecificUrls
-import com.suihan74.satena.scenes.post.exceptions.*
+import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
+import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
+import com.suihan74.satena.scenes.post.exceptions.PostingMisskeyFailureException
+import com.suihan74.satena.scenes.post.exceptions.TagAlreadyExistsException
+import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
 import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
@@ -169,9 +173,11 @@ class BookmarkPostRepository(
 
         if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
             private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED)
+            share.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SHARE_LAST_CHECKED)
         }
         else {
             private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED)
+            share.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SHARE_DEFAULT_CHECKED)
         }
 
         val result = runCatching {
