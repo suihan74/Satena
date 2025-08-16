@@ -295,6 +295,18 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this) {
             runCatching { refreshLists() }
         }
+
+        onBackPressedDispatcher.addCallback(this) {
+            when {
+                isDrawerOpened -> binding.drawerLayout.closeDrawer(binding.drawerArea)
+
+                isFABMenuOpened -> closeFABMenu()
+
+                extraScrolling -> binding.motionLayout.transitionToStart()
+
+                else -> finish()
+            }
+        }
     }
 
     /** 最初に表示するコンテンツの用意 */
@@ -421,19 +433,6 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         }
     }
 
-    /** 戻るボタンの挙動 */
-    override fun onBackPressed() {
-        when {
-            isDrawerOpened -> binding.drawerLayout.closeDrawer(binding.drawerArea)
-
-            isFABMenuOpened -> closeFABMenu()
-
-            extraScrolling -> binding.motionLayout.transitionToStart()
-
-            else -> finish()
-        }
-    }
-
     /** Activity遷移で結果が返ってくるのを期待する場合 */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -544,9 +543,12 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
 
     private fun finishImpl() {
         try {
-            super.onBackPressed()
-            if (supportFragmentManager.backStackEntryCount == 0) {
+            if (supportFragmentManager.backStackEntryCount <= 1) {
+                finishActivity(0)
                 super.finish()
+            }
+            else {
+                supportFragmentManager.popBackStack()
             }
         }
         catch (e: Throwable) {
