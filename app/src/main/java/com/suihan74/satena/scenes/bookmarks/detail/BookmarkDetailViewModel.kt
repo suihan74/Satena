@@ -6,8 +6,14 @@ import android.net.Uri
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
@@ -245,11 +251,11 @@ class BookmarkDetailViewModel(
                     c.text.substring(c.selectionStart, c.selectionEnd)
                 }
             }
-            selectedText.value = result.getOrNull()
+            selectedText.value = result.getOrNull() ?: ""
             return false
         }
         override fun onDestroyActionMode(mode: ActionMode?) {
-            selectedText.value = null
+            selectedText.value = ""
         }
         override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
             if (repository.isCommentTextSearchButtonEnabled) {
@@ -267,7 +273,7 @@ class BookmarkDetailViewModel(
                     }
                     val intent = Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://www.google.com/search?q=${Uri.encode(selectedText)}")
+                        "https://www.google.com/search?q=${Uri.encode(selectedText)}".toUri()
                     )
                     context.startActivity(intent)
                     mode?.finish()

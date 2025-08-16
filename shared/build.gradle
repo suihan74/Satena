@@ -1,11 +1,13 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
 
 android {
-    compileSdk 34
+    compileSdk = 36
 
     defaultConfig {
-        minSdk 23
-        targetSdk 34
+        minSdk = 23
+        targetSdk = 36
     }
     buildTypes {
         release {
@@ -18,13 +20,13 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    namespace 'org.chromium.customtabsclient.shared'
+    namespace = 'org.chromium.customtabsclient.shared'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
 //    compileOnly 'com.android.support:customtabs:28.0.0'
     compileOnly 'androidx.browser:browser:1.8.0'
 }

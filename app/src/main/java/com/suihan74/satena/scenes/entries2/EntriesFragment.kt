@@ -17,7 +17,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.toVisibility
-import java.util.*
+import java.util.UUID
 
 abstract class EntriesFragment : Fragment() {
     companion object {

@@ -2,13 +2,16 @@ package com.suihan74.satena.scenes.authentication
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.suihan74.satena.R
@@ -33,9 +36,24 @@ class MastodonAuthenticationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = getColor(R.color.mastodonBackground)
+//        window.statusBarColor = getColor(R.color.mastodonBackground)
         binding = ActivityMastodonAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // ステータスバーを避けるように配置する
+        binding.mainLayout.setOnApplyWindowInsetsListener { view, insets ->
+            binding.mainLayout.updatePadding(top =
+                when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                        insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).top
+                    }
+                    else -> {
+                        insets.systemWindowInsetTop
+                    }
+                }
+            )
+            insets
+        }
 
         binding.authButton.setOnClickListener {
             showProgressBar()
@@ -184,7 +202,7 @@ class MastodonAuthenticationActivity : AppCompatActivity() {
             .signInMastodon(instanceName, accessToken.accessToken)
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
     }

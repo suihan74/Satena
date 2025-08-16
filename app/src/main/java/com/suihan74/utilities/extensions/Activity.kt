@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.suihan74.satena.BuildConfig
 import java.io.File
 
 /**
@@ -56,7 +55,7 @@ fun Activity.hideSoftInputMethod(focusTarget: View? = null) : Boolean {
  * @param file ```AndroidManifest.xml```に公開可能として登録済みのディレクトリに置かれたファイル
  */
 fun Activity.getSharableFileUri(file: File) : Uri {
-    return FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", file)
+    return FileProvider.getUriForFile(this, this.packageName + ".fileprovider", file)
 }
 
 // ------ //

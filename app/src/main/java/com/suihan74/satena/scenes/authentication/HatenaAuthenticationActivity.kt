@@ -1,10 +1,18 @@
 package com.suihan74.satena.scenes.authentication
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.webkit.*
+import android.view.WindowInsets
+import android.webkit.CookieManager
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updatePadding
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
@@ -52,6 +60,21 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHatenaAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // ステータスバーを避けるように配置する
+        binding.mainLayout.setOnApplyWindowInsetsListener { view, insets ->
+            binding.mainLayout.updatePadding(top =
+                when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                        insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()).top
+                    }
+                    else -> {
+                        insets.systemWindowInsetTop
+                    }
+                }
+            )
+            insets
+        }
 
         initializeWebView(binding.webView)
 
@@ -131,6 +154,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
             error: WebResourceError?
         ) {
             super.onReceivedError(view, request, error)
+            error?.let { Log.e("WebView",it.description.toString()) }
             // TODO: 以下の条件なしだとプロキシ利用などでリソース読み込み拒否した場合でも終了してしまうので、あとでなんとかする
             if (request?.url?.toString() == SIGN_IN_PAGE_URL) {
                 onError()

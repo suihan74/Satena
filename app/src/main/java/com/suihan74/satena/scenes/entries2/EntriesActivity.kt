@@ -5,7 +5,12 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.Gravity
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.ImageButton
 import androidx.activity.addCallback
 import androidx.annotation.MenuRes
@@ -45,9 +50,21 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivityContract
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
-import com.suihan74.utilities.*
-import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.dp2px
+import com.suihan74.utilities.extensions.get
+import com.suihan74.utilities.extensions.getObjectExtra
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.getThemeDrawable
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.toVisibility
+import com.suihan74.utilities.extensions.whenTrue
+import com.suihan74.utilities.lazyProvideViewModel
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
 import kotlinx.coroutines.delay
@@ -160,6 +177,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         }
         setContentView(binding.root)
 
+        // ステータスバーを避けるようにAppBarを配置する
+//        binding.drawerLayout.setOnApplyWindowInsetsListener { view, insets ->
+//            binding.appbarLayout.updatePadding(top = insets.systemWindowInsetTop)
+//            binding.drawerLayout.updatePadding(bottom = insets.systemWindowInsetBottom)
+//            insets.consumeSystemWindowInsets()
+//        }
+
         // カテゴリリスト初期化
         binding.categoriesList.adapter = CategoriesAdapter().apply {
             setOnItemClickedListener { category ->
@@ -270,6 +294,18 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         // 非表示エントリ情報が更新されたらリストを更新する
         viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this) {
             runCatching { refreshLists() }
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            when {
+                isDrawerOpened -> binding.drawerLayout.closeDrawer(binding.drawerArea)
+
+                isFABMenuOpened -> closeFABMenu()
+
+                extraScrolling -> binding.motionLayout.transitionToStart()
+
+                else -> finish()
+            }
         }
     }
 
@@ -397,19 +433,6 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         }
     }
 
-    /** 戻るボタンの挙動 */
-    override fun onBackPressed() {
-        when {
-            isDrawerOpened -> binding.drawerLayout.closeDrawer(binding.drawerArea)
-
-            isFABMenuOpened -> closeFABMenu()
-
-            extraScrolling -> binding.motionLayout.transitionToStart()
-
-            else -> finish()
-        }
-    }
-
     /** Activity遷移で結果が返ってくるのを期待する場合 */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -520,9 +543,12 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
 
     private fun finishImpl() {
         try {
-            super.onBackPressed()
-            if (supportFragmentManager.backStackEntryCount == 0) {
+            if (supportFragmentManager.backStackEntryCount <= 1) {
+                finishActivity(0)
                 super.finish()
+            }
+            else {
+                supportFragmentManager.popBackStack()
             }
         }
         catch (e: Throwable) {
