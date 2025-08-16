@@ -95,8 +95,8 @@ class Migration1to2 : Migration(1, 2) {
         db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `url` ON `history` (`url`)")
     }
 
-    override fun migrate(database: SupportSQLiteDatabase) {
-        createHistoryTable(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        createHistoryTable(db)
     }
 }
 
@@ -106,8 +106,8 @@ class Migration2to3 : Migration(2, 3) {
         db.execSQL("ALTER TABLE `history` ADD `visitTimes` INTEGER NOT NULL DEFAULT 1")
     }
 
-    override fun migrate(database: SupportSQLiteDatabase) {
-        createHistoryVisitTimesColumn(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        createHistoryVisitTimesColumn(db)
     }
 }
 
@@ -122,9 +122,9 @@ class Migration3to4 : Migration(3, 4) {
         db.execSQL("DROP TABLE IF EXISTS `history`")
     }
 
-    override fun migrate(database: SupportSQLiteDatabase) {
-        createHistoryTables(database)
-        dropOldTable(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        createHistoryTables(db)
+        dropOldTable(db)
     }
 }
 
@@ -140,9 +140,9 @@ class Migration4to5 : Migration(4, 5) {
         db.execSQL("DROP TABLE IF EXISTS `browser_history_items`")
     }
 
-    override fun migrate(database: SupportSQLiteDatabase) {
-        dropOldTable(database)
-        createHistoryTables(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        dropOldTable(db)
+        createHistoryTables(db)
     }
 }
 
@@ -153,8 +153,8 @@ class Migration1to5 : Migration(1, 5) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `browser_history_items` (`visitedAt` INTEGER NOT NULL, `pageId` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
     }
 
-    override fun migrate(database: SupportSQLiteDatabase) {
-        createHistoryTables(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        createHistoryTables(db)
     }
 }
 
@@ -165,10 +165,10 @@ class Migration1to5 : Migration(1, 5) {
  * 端末の現在のタイムゾーンで保存されたと仮定して、その分のオフセットを差し引いたUTC値に修正する
  */
 class Migration5to6 : Migration(5, 6) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
         val offset = OffsetDateTime.now().offset.totalSeconds
-        database.execSQL("UPDATE `browser_history_pages` SET `lastVisited` = `lastVisited` - $offset")
-        database.execSQL("UPDATE `browser_history_items` SET `visitedAt` = `visitedAt` - $offset")
+        db.execSQL("UPDATE `browser_history_pages` SET `lastVisited` = `lastVisited` - $offset")
+        db.execSQL("UPDATE `browser_history_items` SET `visitedAt` = `visitedAt` - $offset")
     }
 }
 
@@ -176,8 +176,8 @@ class Migration5to6 : Migration(5, 6) {
  * v1.10.0: 既読エントリを記録する
  */
 class Migration6to7 : Migration(6, 7) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("CREATE TABLE IF NOT EXISTS `read_entry` (`eid` INTEGER PRIMARY KEY NOT NULL, `timestamp` INTEGER NOT NULL)")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `read_entry` (`eid` INTEGER PRIMARY KEY NOT NULL, `timestamp` INTEGER NOT NULL)")
     }
 }
 
@@ -187,10 +187,10 @@ class Migration6to7 : Migration(6, 7) {
  * 開発バージョン用
  */
 class Migration7to8 : Migration(7, 8) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("CREATE TABLE IF NOT EXISTS `browser_favicon_info` (`domain` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
-        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_domain` ON `browser_favicon_info` (`domain`)")
-        database.execSQL("ALTER TABLE `browser_history_pages` ADD `faviconInfoId` INTEGER NOT NULL DEFAULT 0")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `browser_favicon_info` (`domain` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_domain` ON `browser_favicon_info` (`domain`)")
+        db.execSQL("ALTER TABLE `browser_history_pages` ADD `faviconInfoId` INTEGER NOT NULL DEFAULT 0")
         Log.i("migration7to8", "completed")
     }
 }
@@ -201,10 +201,10 @@ class Migration7to8 : Migration(7, 8) {
  * 開発バージョン用
  */
 class Migration8to9 : Migration(8, 9) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("CREATE TABLE IF NOT EXISTS `favorite_site` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `isEnabled` INTEGER NOT NULL, `faviconInfoId` INTEGER NOT NULL, `faviconUrl` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
-        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favorite_site_url` ON `favorite_site` (`url`)")
-        database.execSQL("DELETE FROM `read_entry` WHERE eid = 0")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `favorite_site` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `isEnabled` INTEGER NOT NULL, `faviconInfoId` INTEGER NOT NULL, `faviconUrl` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favorite_site_url` ON `favorite_site` (`url`)")
+        db.execSQL("DELETE FROM `read_entry` WHERE eid = 0")
         Log.i("migration8to9", "completed")
     }
 }
@@ -213,12 +213,12 @@ class Migration8to9 : Migration(8, 9) {
  * v1.11.0: faviconInfoの対象サイトを表すカラムの名称を`domain`から`site`に変更
  */
 class Migration9to10 : Migration(9, 10) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("CREATE TABLE IF NOT EXISTS `MIG_TEMP` (`site` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
-        database.execSQL("INSERT INTO `MIG_TEMP` SELECT * FROM `browser_favicon_info`")
-        database.execSQL("DROP TABLE `browser_favicon_info`")
-        database.execSQL("ALTER TABLE `MIG_TEMP` RENAME TO `browser_favicon_info`")
-        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_site` ON `browser_favicon_info` (`site`)")
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `MIG_TEMP` (`site` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        db.execSQL("INSERT INTO `MIG_TEMP` SELECT * FROM `browser_favicon_info`")
+        db.execSQL("DROP TABLE `browser_favicon_info`")
+        db.execSQL("ALTER TABLE `MIG_TEMP` RENAME TO `browser_favicon_info`")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_site` ON `browser_favicon_info` (`site`)")
         Log.i("migration9to10", "completed")
     }
 }
@@ -227,10 +227,10 @@ class Migration9to10 : Migration(9, 10) {
  * v1.11.0: v8~v10のマイグレーション処理をリリース版用にまとめたもの
  */
 class Migration7to10 : Migration(7, 10) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        createTableFaviconInfo(database)
-        createTableFavoriteSite(database)
-        deleteReadEntryHasInvalidEid(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        createTableFaviconInfo(db)
+        createTableFavoriteSite(db)
+        deleteReadEntryHasInvalidEid(db)
         Log.i("migration7to10", "completed")
     }
 
@@ -257,8 +257,8 @@ class Migration7to10 : Migration(7, 10) {
  * v1.11.3:
  */
 class Migration10to11 : Migration(10, 11) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        addIgnoredEntryAsRegex(database)
+    override fun migrate(db: SupportSQLiteDatabase) {
+        addIgnoredEntryAsRegex(db)
         Log.i("migration10to11", "completed")
     }
 
