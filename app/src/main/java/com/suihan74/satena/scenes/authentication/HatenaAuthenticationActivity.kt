@@ -2,8 +2,13 @@ package com.suihan74.satena.scenes.authentication
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.webkit.*
+import android.webkit.CookieManager
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
@@ -131,6 +136,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
             error: WebResourceError?
         ) {
             super.onReceivedError(view, request, error)
+            error?.let { Log.e("WebView",it.description.toString()) }
             // TODO: 以下の条件なしだとプロキシ利用などでリソース読み込み拒否した場合でも終了してしまうので、あとでなんとかする
             if (request?.url?.toString() == SIGN_IN_PAGE_URL) {
                 onError()

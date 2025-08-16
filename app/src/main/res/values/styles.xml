@@ -238,4 +238,9 @@
     <style name="BottomSheet.ExDark">
         <item name="android:background">@drawable/shape_bottom_sheet_rounded_corner_ex_dark</item>
     </style>
+
+    <!-- AppBarLayout -->
+    <style name="AppBarLayout" parent="Widget.MaterialComponents.AppBarLayout.Primary">
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
 </resources>

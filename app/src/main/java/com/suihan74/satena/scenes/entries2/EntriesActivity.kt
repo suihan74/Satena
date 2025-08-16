@@ -5,7 +5,12 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.Gravity
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.ImageButton
 import androidx.activity.addCallback
 import androidx.annotation.MenuRes
@@ -45,9 +50,21 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivityContract
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
-import com.suihan74.utilities.*
-import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.dp2px
+import com.suihan74.utilities.extensions.get
+import com.suihan74.utilities.extensions.getObjectExtra
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.getThemeDrawable
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.toVisibility
+import com.suihan74.utilities.extensions.whenTrue
+import com.suihan74.utilities.lazyProvideViewModel
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
 import kotlinx.coroutines.delay
@@ -159,6 +176,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             it.lifecycleOwner = this
         }
         setContentView(binding.root)
+
+        // ステータスバーを避けるようにAppBarを配置する
+//        binding.drawerLayout.setOnApplyWindowInsetsListener { view, insets ->
+//            binding.appbarLayout.updatePadding(top = insets.systemWindowInsetTop)
+//            binding.drawerLayout.updatePadding(bottom = insets.systemWindowInsetBottom)
+//            insets.consumeSystemWindowInsets()
+//        }
 
         // カテゴリリスト初期化
         binding.categoriesList.adapter = CategoriesAdapter().apply {

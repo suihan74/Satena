@@ -3,7 +3,7 @@
     <!-- Base application theme. -->
     <style name="Base.AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorPrimary</item>
 
         <!-- FABのデフォルトスタイル -->
@@ -20,6 +20,7 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
 
         <!-- action bar area -->
+        <item name="appBarLayoutStyle">@style/AppBarLayout</item>
         <item name="android:actionOverflowButtonStyle">@style/ActionBarButtonStyle</item>
         <!-- バーの背景色 -->
         <item name="android:statusBarColor">@color/colorPrimary</item>
@@ -63,6 +64,7 @@
 
     <!-- Light Theme -->
     <style name="Base.AppTheme.Light">
+        <!-- バーの背景色 -->
         <item name="panelBackground">@color/panelBackground</item>
         <item name="tabBackground">@color/tabBackground</item>
         <item name="android:textColor">@color/textColor</item>
@@ -157,7 +159,7 @@
         <!-- ツールバーの色を他の部分に渡すために使用 -->
         <item name="toolbarBackground">@color/panelBackgroundExDark</item>
         <item name="toolbarStyle">@style/ToolbarStyleExDark</item>
-        <item name="android:statusBarColor">@color/panelBackgroundExDark</item>
+<!--        <item name="android:statusBarColor">@color/panelBackgroundExDark</item>-->
         <item name="panelBackground">@color/panelBackgroundExDark</item>
         <item name="tabBackground">@color/tabBackgroundExDark</item>
         <item name="android:textColor">@color/textColorExDark</item>

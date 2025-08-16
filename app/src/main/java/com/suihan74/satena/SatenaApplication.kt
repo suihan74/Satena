@@ -15,10 +15,22 @@ import androidx.core.content.getSystemService
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.AppDatabase
+import com.suihan74.satena.models.BrowserSettingsKeyMigration
+import com.suihan74.satena.models.EntriesHistoryKeyMigration
+import com.suihan74.satena.models.FavoriteSitesKeyMigration
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.PreferenceKeyMigration
+import com.suihan74.satena.models.Theme
+import com.suihan74.satena.models.migrate
 import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.satena.scenes.entries2.ReadEntriesRepository
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
@@ -35,7 +47,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class SatenaApplication : Application() {
@@ -77,7 +89,7 @@ class SatenaApplication : Application() {
     val versionCode: Long by lazy { PackageInfoCompat.getLongVersionCode(packageInfo) }
 
     /** アプリのバージョン名 */
-    val versionName: String by lazy { packageInfo.versionName }
+    val versionName: String by lazy { packageInfo.versionName!! }
 
     /** アプリのメジャーバージョン */
     val majorVersionCode: Long by lazy { getMajorVersion(versionCode) }
@@ -363,7 +375,7 @@ class SatenaApplication : Application() {
         val manager = context.getSystemService<ActivityManager>()!!
         val pid = android.os.Process.myPid()
         return manager.runningAppProcesses.firstOrNull {
-            it.processName == BuildConfig.APPLICATION_ID && it.pid == pid
+            it.processName == context.packageName && it.pid == pid
         } != null
     }
 
